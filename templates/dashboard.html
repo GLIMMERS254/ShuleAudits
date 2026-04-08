@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShuleAudits - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: #1a6b3c;
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .navbar h1 { color: white; font-size: 20px; font-weight: 800; }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .navbar a:hover { background: rgba(255,255,255,0.35); }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .welcome {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            margin-bottom: 30px;
+            border-left: 5px solid #1a6b3c;
+        }
+        .welcome h2 { color: #1a6b3c; font-size: 22px; margin-bottom: 6px; }
+        .welcome p { color: #666; font-size: 14px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+            text-align: center;
+        }
+        .stat-card .icon { font-size: 36px; margin-bottom: 10px; }
+        .stat-card h3 { font-size: 28px; color: #1a6b3c; font-weight: 800; }
+        .stat-card p { font-size: 13px; color: #888; margin-top: 4px; }
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+        }
+        .info-card h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f9f9f9;
+            font-size: 14px;
+        }
+        .info-row .label { color: #888; font-weight: 600; }
+        .info-row .value { color: #333; font-weight: 500; }
+        .badge {
+            background: #e8f5e9;
+            color: #1a6b3c;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🏫 ShuleAudits</h1>
+        <a href="/logout">Logout</a>
+    </div>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Welcome, {{ school.name }}! 👋</h2>
+            <p>Your school account is active and verified. Here's your dashboard overview.</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <h3>Active</h3>
+                <p>Account Status</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📋</div>
+                <h3>0</h3>
+                <p>Audits Submitted</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <h3>0</h3>
+                <p>Reports Generated</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🔔</div>
+                <h3>0</h3>
+                <p>Notifications</p>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <h3>📌 School Information</h3>
+            <div class="info-row">
+                <span class="label">School Name</span>
+                <span class="value">{{ school.name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Email</span>
+                <span class="value">{{ school.email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Phone</span>
+                <span class="value">{{ school.phone }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Verification</span>
+                <span class="value"><span class="badge">✓ Verified</span></span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

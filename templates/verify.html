@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShuleAudits - Verify OTP</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a6b3c, #0d3d22);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .icon { font-size: 50px; margin-bottom: 16px; }
+        h2 { color: #1a6b3c; font-size: 22px; margin-bottom: 8px; }
+        p { color: #666; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+        .form-group { margin-bottom: 18px; text-align: left; }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 22px;
+            text-align: center;
+            letter-spacing: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #1a6b3c; }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            background: #1a6b3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #0d3d22; }
+        .error {
+            background: #fff0f0;
+            color: #c0392b;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            border-left: 4px solid #c0392b;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">📱</div>
+        <h2>Verify Your Account</h2>
+        <p>We sent a 6-digit OTP to your phone and email. Enter it below to activate your account.</p>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Enter OTP Code</label>
+                <input type="text" name="otp" placeholder="000000" maxlength="6" required>
+            </div>
+            <button type="submit" class="btn">Verify Account</button>
+        </form>
+    </div>
+</body>
+</html>
