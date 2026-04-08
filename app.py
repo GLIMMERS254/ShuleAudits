@@ -44,14 +44,14 @@ def send_email_otp(to_email, otp):
         msg["Subject"] = "ShuleAudits - OTP Verification Code"
         msg["From"]    = EMAIL_ADDRESS
         msg["To"]      = to_email
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=5) as server:
             server.ehlo()
             server.starttls()
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ADDRESS, to_email, msg.as_string())
         print(f"✅ Email sent to {to_email}")
     except Exception as e:
-        print(f"❌ Email error: {e}")
+        print(f"❌ Email blocked/failed: {e}")
 
 # ─── Send SMS OTP ─────────────────────────────────────────────────
 def send_sms_otp(phone, otp):
@@ -62,9 +62,9 @@ def send_sms_otp(phone, otp):
         )
         print(f"✅ SMS sent to {phone}")
     except Exception as e:
-        print(f"❌ SMS error: {e}")
+        print(f"❌ SMS blocked/failed: {e}")
 
-# ─── HOME ──────────────────────────────────────────────────────────
+# ─── HOME ─────────────────────────────────────────────────────────
 @app.route("/")
 def home():
     return redirect(url_for("login"))
@@ -98,7 +98,7 @@ def register():
         send_sms_otp(phone, otp)
 
         session["pending_email"] = email
-        session["debug_otp"]     = otp  # remove this after testing
+        session["debug_otp"]     = otp
         return redirect(url_for("verify"))
 
     return render_template("register.html")

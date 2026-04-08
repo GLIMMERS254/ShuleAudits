@@ -80,6 +80,11 @@
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
+        {% if session.get("debug_otp") %}
+<div style="background:#e8f5e9; color:#1a6b3c; padding:12px 16px; border-radius:8px; font-size:15px; margin-bottom:16px; border-left:4px solid #1a6b3c; text-align:left;">
+    <strong>Your OTP Code:</strong> {{ session.get("debug_otp") }}
+</div>
+{% endif %}
 
         <form method="POST">
             <div class="form-group">
