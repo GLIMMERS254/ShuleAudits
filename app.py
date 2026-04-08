@@ -6,56 +6,70 @@ from email.mime.text import MIMEText
 import africastalking
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "shuleaudits_secret")
+app.secret_key = os.environ.get("SECRET_KEY", "shuleaudits2024secure")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///shuleaudits.db"
 db = SQLAlchemy(app)
 
 # ─── Africa's Talking Setup ───────────────────────────────────────
 AT_USERNAME = os.environ.get("AT_USERNAME", "sandbox")
-AT_API_KEY  = os.environ.get("AT_API_KEY", "your_api_key_here")
+AT_API_KEY  = os.environ.get("AT_API_KEY", "sandbox")
 africastalking.initialize(AT_USERNAME, AT_API_KEY)
 sms = africastalking.SMS
 
 # ─── Email Setup ──────────────────────────────────────────────────
-EMAIL_ADDRESS  = os.environ.get("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD")
+EMAIL_ADDRESS  = os.environ.get("EMAIL_ADDRESS", "raymondpolycarp383@gmail.com")
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "inpwjrhlprurmnbh")
 
 # ─── Database Model ───────────────────────────────────────────────
 class School(db.Model):
-    id         = db.Column(db.Integer, primary_key=True)
-    name       = db.Column(db.String(100), nullable=False)
-    email      = db.Column(db.String(100), unique=True, nullable=False)
-    phone      = db.Column(db.String(20), nullable=False)
-    password   = db.Column(db.String(200), nullable=False)
-    otp        = db.Column(db.String(6))
-    verified   = db.Column(db.Boolean, default=False)
+    id       = db.Column(db.Integer, primary_key=True)
+    name     = db.Column(db.String(100), nullable=False)
+    email    = db.Column(db.String(100), unique=True, nullable=False)
+    phone    = db.Column(db.String(20), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    otp      = db.Column(db.String(6))
+    verified = db.Column(db.Boolean, default=False)
 
 with app.app_context():
     db.create_all()
 
-# ─── Helper: Generate OTP ─────────────────────────────────────────
+# ─── Generate OTP ─────────────────────────────────────────────────
 def generate_otp():
     return str(random.randint(100000, 999999))
 
-# ─── Helper: Send Email OTP ───────────────────────────────────────
+# ─── Send Email OTP ───────────────────────────────────────────────
 def send_email_otp(to_email, otp):
-    msg = MIMEText(f"Your ShuleAudits OTP is: {otp}")
-    msg["Subject"] = "ShuleAudits OTP Verification"
-    msg["From"]    = EMAIL_ADDRESS
-    msg["To"]      = to_email
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_ADDRESS, to_email, msg.as_string())
+    try:
+        msg = MIMEText(f"Your ShuleAudits OTP verification code is: {otp}\n\nDo not share this code with anyone.")
+        msg["Subject"] = "ShuleAudits - OTP Verification Code"
+        msg["From"]    = EMAIL_ADDRESS
+        msg["To"]      = to_email
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_ADDRESS, to_email, msg.as_string())
+        print(f"✅ Email sent to {to_email}")
+    except Exception as e:
+        print(f"❌ Email error: {e}")
 
-# ─── Helper: Send SMS OTP ─────────────────────────────────────────
+# ─── Send SMS OTP ─────────────────────────────────────────────────
 def send_sms_otp(phone, otp):
-    sms.send(message=f"Your ShuleAudits OTP is: {otp}", recipients=[phone])
+    try:
+        sms.send(
+            message=f"Your ShuleAudits OTP is: {otp}. Do not share this code.",
+            recipients=[phone]
+        )
+        print(f"✅ SMS sent to {phone}")
+    except Exception as e:
+        print(f"❌ SMS error: {e}")
 
-# ─── Routes ───────────────────────────────────────────────────────
+# ─── HOME ──────────────────────────────────────────────────────────
 @app.route("/")
 def home():
     return redirect(url_for("login"))
 
+# ─── REGISTER ─────────────────────────────────────────────────────
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -66,7 +80,11 @@ def register():
         confirm  = request.form["confirm"]
 
         if password != confirm:
-            return render_template("register.html", error="Passwords do not match")
+            return render_template("register.html", error="Passwords do not match.")
+
+        existing = School.query.filter_by(email=email).first()
+        if existing:
+            return render_template("register.html", error="Email already registered.")
 
         hashed = generate_password_hash(password)
         otp    = generate_otp()
@@ -80,10 +98,12 @@ def register():
         send_sms_otp(phone, otp)
 
         session["pending_email"] = email
+        session["debug_otp"]     = otp  # remove this after testing
         return redirect(url_for("verify"))
 
     return render_template("register.html")
 
+# ─── VERIFY ───────────────────────────────────────────────────────
 @app.route("/verify", methods=["GET", "POST"])
 def verify():
     if request.method == "POST":
@@ -94,13 +114,15 @@ def verify():
         if school and school.otp == entered_otp:
             school.verified = True
             db.session.commit()
+            session.pop("debug_otp", None)
             session["school_id"] = school.id
             return redirect(url_for("dashboard"))
         else:
-            return render_template("verify.html", error="Invalid OTP. Try again.")
+            return render_template("verify.html", error="Invalid OTP. Please try again.")
 
     return render_template("verify.html")
 
+# ─── LOGIN ────────────────────────────────────────────────────────
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -113,10 +135,12 @@ def login():
                 return render_template("login.html", error="Please verify your account first.")
             session["school_id"] = school.id
             return redirect(url_for("dashboard"))
-        return render_template("login.html", error="Invalid credentials.")
+
+        return render_template("login.html", error="Invalid email or password.")
 
     return render_template("login.html")
 
+# ─── DASHBOARD ────────────────────────────────────────────────────
 @app.route("/dashboard")
 def dashboard():
     if "school_id" not in session:
@@ -124,6 +148,7 @@ def dashboard():
     school = School.query.get(session["school_id"])
     return render_template("dashboard.html", school=school)
 
+# ─── LOGOUT ───────────────────────────────────────────────────────
 @app.route("/logout")
 def logout():
     session.clear()
